@@ -20,8 +20,8 @@ public class CipherTest {
 
     @Test
     public void itShouldCorrectlyEncodeASentence(){
-        String plaintext = "This is a test message";
-        String expected = "Wklv lv d whvw phvvdjh";
+        String plaintext = "this is a test message";
+        String expected = "wklv lv d whvw phvvdjh";
         String actual = cipher.getEncryption(plaintext, 3);
         Assertions.assertEquals(expected, actual);
     }
@@ -44,14 +44,14 @@ public class CipherTest {
 
     @Test
     public void itShouldReturnANumberBelowTwentySix(){
-        int actual = cipher.getShiftValue();
+        int actual = cipher.setShiftValue();
         Assertions.assertTrue(actual < 26);
     }
 
     @Test
     public void itShouldCorrectlyDecodeASentenceWithShift(){
-        String ciphertext = "Wklv lv d whvw phvvdjh";
-        String expected = "This is a test message";
+        String ciphertext = "wklv lv d whvw phvvdjh";
+        String expected = "this is a test message";
         String actual = cipher.getDecryptionWithShift(ciphertext, 3);
         Assertions.assertEquals(expected, actual);
     }
