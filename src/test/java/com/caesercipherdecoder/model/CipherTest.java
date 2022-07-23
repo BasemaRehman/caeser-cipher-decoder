@@ -62,6 +62,13 @@ public class CipherTest {
         String actual = cipher.getDecryptionWithShift(ciphertext, 3);
         Assertions.assertEquals("hello", actual);
     }
+
+    @Test
+    public void itShouldDecodeALongMessageWithoutShift(){
+        String ciphertext = "xli erexsqc sj e fefc alepi mw zivc gsqtpib mrhiih";
+        String expected = "the anatomy of a baby whale is very complex indeed";
+        Assertions.assertEquals(cipher.getDecryptionWithoutShift(ciphertext), expected);
+    }
 }
 
 

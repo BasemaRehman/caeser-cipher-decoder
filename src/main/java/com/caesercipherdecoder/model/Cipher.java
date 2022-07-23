@@ -1,5 +1,6 @@
 package com.caesercipherdecoder.model;
 
+import java.util.Arrays;
 import java.util.Random;
 //All messages must have characters between a-z to work and must be in lower case
 //Try to add functionality for other characters (e.g. ? / .)
@@ -40,4 +41,44 @@ public class Cipher {
     public String getDecryptionWithShift(String inputString, int shiftValue) {
         return getEncryption(inputString, 26 - (shiftValue % 26));
     }
+    //For each offset, calculate decrypted counts and compare with english letter probabilities
+    //Can only work with longer messages as shorter messages don't have enough info
+    public String getDecryptionWithoutShift(String inputString){
+        //calculate chi-squared
+        double[] probabilities = new double[26];
+        int probableOffset = 0;
+        for(int i = 1; i<ALPHABET_SIZE; i++){
+            String decryptedMessage = getDecryptionWithShift(inputString, i);
+            long[] decryptedCount = countLetters(decryptedMessage);
+            probabilities[i] = calculateChiSquared(decryptedCount, inputString.length());
+            if(probableOffset == 0 || probabilities[i] < probabilities[probableOffset]){
+                probableOffset = i;
+            }
+        }
+        return getDecryptionWithShift(inputString, probableOffset);
+    }
+
+    private long[] countLetters(String inputString){
+        long[] letterCount = new long[26];
+        for (char c : inputString.toCharArray()){
+            if(c != ' ') {
+                letterCount[c - 'a']++;
+            }
+        }
+        return letterCount;
+    }
+
+    private double calculateChiSquared(long[] offsetCounts, long length){
+        double[] expectedLettersFrequencies = Arrays.stream(ENGLISH_LETTERS_PROBABILITIES)
+                .map(probability -> probability * length)
+                .toArray();
+        double chiValue = 0.0;
+        for(int i = 0; i<ALPHABET_SIZE; i++){
+            chiValue += (Math.pow((offsetCounts[i] - (expectedLettersFrequencies[i])),2))
+                    /ENGLISH_LETTERS_PROBABILITIES[i];
+        }
+        return Math.sqrt(chiValue);
+    }
+
+
 }
