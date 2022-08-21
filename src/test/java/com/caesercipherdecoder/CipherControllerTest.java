@@ -31,6 +31,7 @@ class CipherControllerTest {
     @Test
     void getDecryptionNoShift() {
         request = new Cipher(cipherText);
-        assertTrue(controllerTest.getDecryptionNoShift(request).contains(plaintext));
+        assertEquals(controllerTest.getDecryptionNoShift(request).size(), 1);
+        assertEquals(controllerTest.getDecryptionNoShift(request).get(0), plaintext);
     }
 }
