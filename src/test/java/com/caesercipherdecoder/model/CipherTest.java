@@ -1,9 +1,10 @@
 package com.caesercipherdecoder.model;
+import com.caesercipherdecoder.Cipher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
-import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 
 public class CipherTest {
@@ -46,7 +47,7 @@ public class CipherTest {
     }
 
     @Test
-    public void itShouldReturnANumberBelowTwentySix() throws NoSuchAlgorithmException {
+    public void itShouldReturnANumberBelowTwentySix(){
         int actual = cipher.setShiftValue();
         Assertions.assertTrue(actual < 26);
     }
@@ -69,15 +70,14 @@ public class CipherTest {
     @Test
     public void itShouldDecodeALongMessageWithoutShift(){
         String ciphertext = "xli erexsqc sj e fefc alepi mw zivc gsqtpib mrhiih";
-        String expected = "the anatomy of a baby whale is very complex indeed";
+        List<String> expected = Arrays.asList(new String[]{"the anatomy of a baby whale is very complex indeed"});
         Assertions.assertEquals(cipher.getDecryptionWithoutShift(ciphertext), expected);
     }
 
     @Test
     public void itShouldReturnAllPossibleDecryptions(){
         String ciphertext = "lipps qc reqi";
-        String lowestChiSquaredValue = cipher.getDecryptionWithoutShift(ciphertext);
-        List<String> additionalValues = cipher.getAdditionalDecryptions(ciphertext);
+        List<String> additionalValues = cipher.getDecryptionWithoutShift(ciphertext);
         Assertions.assertTrue(additionalValues.contains("hello my name"));
     }
 }

@@ -1,4 +1,6 @@
-package com.caesercipherdecoder.model;
+package com.caesercipherdecoder;
+
+import org.springframework.stereotype.Component;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -8,7 +10,8 @@ import java.util.List;
 import java.util.Random;
 //All messages must have characters between a-z to work and must be in lower case
 //Try to add functionality for other characters (e.g. ? / .)
-public class Cipher {
+@Component
+public class Cipher implements CipherInterface {
 
     private static final char LETTER_A = 'a';
     private static final char LETTER_Z = 'z';
@@ -16,19 +19,38 @@ public class Cipher {
     private static final double[] ENGLISH_LETTERS_PROBABILITIES = {0.073, 0.009, 0.030, 0.044, 0.130, 0.028, 0.016, 0.035, 0.074, 0.002, 0.003, 0.035, 0.025, 0.078, 0.074, 0.027, 0.003, 0.077, 0.063, 0.093, 0.027, 0.013, 0.016, 0.005, 0.019, 0.001};
     private final double[] probabilities = new double[26];
     private int probableOffset = 0;
+    private String inputString;
+    private int shiftValue = -1;
 
     public Cipher(){
-        // required only for construction and to call other methods
+    }
+
+    public Cipher(String inputString){
+        this.inputString = inputString;
+    }
+
+    public Cipher(String inputString, int shiftValue){
+        this.inputString = inputString;
+        this.shiftValue = shiftValue;
     }
 
     //If a shift value is not provided for excryption, it can be generated here first
-    public int setShiftValue() throws NoSuchAlgorithmException {
-        Random rand = SecureRandom.getInstanceStrong();
+    public int setShiftValue(){
+        Random rand = null;
+        try {
+            rand = SecureRandom.getInstanceStrong();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         return rand.nextInt(25);
     }
 
     //Encryption is (x + n) mod 26
+    @Override
     public String getEncryption(String inputString, int shiftValue) {
+        if(shiftValue == -1){
+            shiftValue = setShiftValue();
+        }
         StringBuilder ciphertext = new StringBuilder();
         for (char character : inputString.toCharArray()) {
             if (character != ' ') {
@@ -44,14 +66,20 @@ public class Cipher {
     }
 
     //Decryption is (x - n) mod 26
+    @Override
     public String getDecryptionWithShift(String inputString, int shiftValue) {
+        if(shiftValue < 0 || shiftValue > 26){
+            return "The original shift value must be between 0 and 26";
+        }
         return getEncryption(inputString, 26 - (shiftValue % 26));
     }
 
     //For each offset, calculate decrypted counts and compare with english letter probabilities
     //Can only work with longer messages as shorter messages don't have enough info
-    public String getDecryptionWithoutShift(String inputString){
+    @Override
+    public List<String> getDecryptionWithoutShift(String inputString){
         //calculate chi-squared
+        List<String> decryptions = new ArrayList<>();
         for(int i = 1; i<ALPHABET_SIZE; i++){
             String decryptedMessage = getDecryptionWithShift(inputString, i);
             long[] decryptedCount = countLetters(decryptedMessage);
@@ -60,10 +88,13 @@ public class Cipher {
                 probableOffset = i;
             }
         }
-        return getDecryptionWithShift(inputString, probableOffset);
+        decryptions.add(getDecryptionWithShift(inputString, probableOffset));
+        decryptions.addAll(getAdditionalDecryptions(inputString));
+        return decryptions;
     }
 
-    public List<String> getAdditionalDecryptions(String inputString){
+
+    private List<String> getAdditionalDecryptions(String inputString){
         List<String> decryptions = new ArrayList<>();
         for(int i = 0; i<probabilities.length; i++){
             if(i != probableOffset && Math.abs(probabilities[i] - probabilities[probableOffset]) <= 1){
@@ -93,5 +124,13 @@ public class Cipher {
                     /ENGLISH_LETTERS_PROBABILITIES[i];
         }
         return Math.sqrt(chiValue);
+    }
+
+    public String getInputString(){
+        return inputString;
+    }
+
+    public int getShiftValue(){
+        return shiftValue;
     }
 }
